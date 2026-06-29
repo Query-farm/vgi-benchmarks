@@ -227,6 +227,12 @@ def cmd_run(args: argparse.Namespace) -> int:
     }
     write_manifest(run_dir, manifest)
 
+    # Force-install the latest VGI community build exactly once per run, before any
+    # worker connects. Per-cell connections then only LOAD it.
+    from vgi_bench.db_session import force_install_extension
+
+    force_install_extension()
+
     # Group cells by (language, transport) so the haybarn connection + worker
     # ATTACH can be reused across them. Sort by threads ascending within a group
     # so the observed pool peak reflects each cell's own thread count.

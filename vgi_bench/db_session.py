@@ -46,26 +46,44 @@ class WarmSessionResult:
 _FORCE_INSTALLED = False
 
 
-def _ensure_extension_loaded(con: haybarn.DuckDBPyConnection) -> None:
-    """Force-install the latest VGI community build once per process, then LOAD it.
+def force_install_extension() -> None:
+    """Force-install the latest VGI community build once per run.
 
-    ``FORCE INSTALL`` re-downloads the community extension so a stale cached copy
-    can't pin an out-of-date wire schema (which would mismatch a newer worker).
-    We do it once per process — the install is global to the DuckDB extension
-    directory, so later connections only need ``LOAD``.
+    Opens a throwaway connection and re-downloads the community extension so a
+    stale cache can't pin an out-of-date wire schema (which would mismatch a
+    newer worker). Called once at the start of a run — the install is global to
+    the DuckDB extension directory, so per-cell connections then only ``LOAD``.
+
+    Tolerant of the Windows file-lock race: the extension dir usually sits
+    outside antivirus exclusions, so a freshly downloaded .duckdb_extension can
+    be briefly locked by an on-access scan and the atomic move fails ("Access is
+    denied"). The already-installed copy stays valid, so we fall back to it.
     """
     global _FORCE_INSTALLED
-    if not _FORCE_INSTALLED:
-        try:
-            con.execute("FORCE INSTALL vgi FROM community;")
-        except Exception as e:
-            # Windows: the extension dir lives outside common AV exclusions, so a
-            # freshly downloaded .duckdb_extension can be briefly locked by an
-            # on-access scan and the atomic move fails ("Access is denied"). The
-            # previously installed copy is still valid — fall back to it.
-            log.warning("FORCE INSTALL vgi failed (using already-installed copy): %s", e)
-        _FORCE_INSTALLED = True
-    con.execute("LOAD vgi;")
+    if _FORCE_INSTALLED:
+        return
+    con = _new_connection()
+    try:
+        con.execute("FORCE INSTALL vgi FROM community;")
+    except Exception as e:
+        log.warning("FORCE INSTALL vgi failed (using already-installed copy): %s", e)
+    finally:
+        con.close()
+    _FORCE_INSTALLED = True
+
+
+def _ensure_extension_loaded(con: haybarn.DuckDBPyConnection) -> None:
+    """LOAD the VGI extension into this connection.
+
+    The community build is force-installed once per run by
+    force_install_extension(); here we only LOAD. As a safety net (e.g. if that
+    step was skipped), install-then-load when LOAD finds nothing installed.
+    """
+    try:
+        con.execute("LOAD vgi;")
+    except Exception:
+        con.execute("INSTALL vgi FROM community;")
+        con.execute("LOAD vgi;")
 
 
 def _new_connection() -> haybarn.DuckDBPyConnection:
