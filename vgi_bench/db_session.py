@@ -43,21 +43,22 @@ class WarmSessionResult:
     error: str | None = None
 
 
-def _ensure_extension_loaded(con: haybarn.DuckDBPyConnection) -> None:
-    """Install the VGI extension from community (idempotent) and load it.
+_FORCE_INSTALLED = False
 
-    The extension may be statically linked in the binary that haybarn ships
-    (depending on the duckdb wheel), in which case INSTALL is a no-op and
-    LOAD is implicit. Run both — they're cheap and idempotent.
+
+def _ensure_extension_loaded(con: haybarn.DuckDBPyConnection) -> None:
+    """Force-install the latest VGI community build once per process, then LOAD it.
+
+    ``FORCE INSTALL`` re-downloads the community extension so a stale cached copy
+    can't pin an out-of-date wire schema (which would mismatch a newer worker).
+    We do it once per process — the install is global to the DuckDB extension
+    directory, so later connections only need ``LOAD``.
     """
-    try:
-        con.execute("INSTALL vgi FROM community;")
-    except Exception as e:
-        log.debug("INSTALL vgi failed (may already be installed): %s", e)
-    try:
-        con.execute("LOAD vgi;")
-    except Exception as e:
-        log.debug("LOAD vgi failed (may already be loaded): %s", e)
+    global _FORCE_INSTALLED
+    if not _FORCE_INSTALLED:
+        con.execute("FORCE INSTALL vgi FROM community;")
+        _FORCE_INSTALLED = True
+    con.execute("LOAD vgi;")
 
 
 def _new_connection() -> haybarn.DuckDBPyConnection:

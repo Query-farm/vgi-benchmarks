@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Reproducible, traceable benchmark suite for VGI across transports, languages, function types, and DuckDB thread counts."
 requires-python = ">=3.11"
 dependencies = [
-  "haybarn>=1.5.3rc2",
+  "haybarn>=1.5.4rc1",  # released DuckDB engine the harness runs in-process
 ]
 
 [project.optional-dependencies]
