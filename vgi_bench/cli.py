@@ -12,7 +12,7 @@ from typing import Any
 from vgi_bench import HARNESS_VERSION
 from vgi_bench.aggregate import fill_parallel_scaling
 from vgi_bench.config import applies, case_threads, load_adapters, load_cases, param_points
-from vgi_bench.fingerprint import DEFAULT_DUCKDB, build_fingerprint
+from vgi_bench.fingerprint import build_fingerprint
 from vgi_bench.models import Adapter, Case, Cell
 from vgi_bench.templating import render_sql, write_sql
 from vgi_bench.writers import (
@@ -193,9 +193,12 @@ def cmd_run(args: argparse.Namespace) -> int:
             print(f"sample SQL for {sample_cell.case.id}:\n----\n{sql}----")
         return 0
 
-    duckdb_binary = args.duckdb or DEFAULT_DUCKDB
-    if not Path(duckdb_binary).exists():
-        raise SystemExit(f"duckdb binary not found: {duckdb_binary}")
+    # The harness runs in-process via released haybarn and loads VGI with
+    # `INSTALL vgi FROM community; LOAD vgi;` (no locally built binary required).
+    # `--duckdb <path>` is still honoured for back-compat / fingerprinting only.
+    duckdb_binary = args.duckdb
+    if duckdb_binary and not Path(duckdb_binary).exists():
+        raise SystemExit(f"--duckdb specified but not found: {duckdb_binary}")
 
     env = build_fingerprint(duckdb_binary=duckdb_binary, note=args.note or "")
     out_root = Path(args.out) if args.out else RESULTS_DIR
@@ -209,7 +212,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         "threads": args.threads,
         "iterations_override": args.iterations_override,
         "note": args.note,
-        "duckdb": str(duckdb_binary),
+        "duckdb": str(duckdb_binary) if duckdb_binary else "haybarn (in-process)",
         "trim_outliers": args.trim_outliers,
         "fail_fast": args.fail_fast,
     }
@@ -340,7 +343,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_run.add_argument("--iterations-override", help="Comma key=val pairs, e.g. 'warmup=1,measured=3'.")
     p_run.add_argument("--out", help="Results root dir (default: ./results).")
     p_run.add_argument("--note", help="Free-text note stamped into env.json.")
-    p_run.add_argument("--duckdb", help="Path to the duckdb CLI binary.")
+    p_run.add_argument(
+        "--duckdb",
+        help="Optional path to a duckdb CLI binary (back-compat / fingerprint only). "
+        "By default the harness runs in-process via released haybarn and loads VGI "
+        "with INSTALL vgi FROM community.",
+    )
     p_run.add_argument("--trim-outliers", action="store_true", help="Drop IQR-outlier samples.")
     p_run.add_argument("--fail-fast", action="store_true", help="Abort on the first cell error.")
     p_run.add_argument(
