@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "run_id": "2026-06-29T0433-7e4c00f-dirty",
+  "started_utc": "2026-06-29T04:33:32Z",
+  "harness_version": "0.1.0",
+  "matrix_size": 24,
+  "cli_args": {
+    "cases": "scalar_multiply,scalar_upper_case",
+    "transports": "subprocess,subprocess-shm,launch,launch-shm",
+    "languages": "python,java,go",
+    "threads": "1,4",
+    "iterations_override": "warmup=2,measured=8",
+    "note": "docs-justification refresh: py/java/go, both scalar cases, all transports, 10M rows",
+    "duckdb": "/Users/rusty/Development/vgi/duckdb.old/build/release/duckdb",
+    "trim_outliers": true,
+    "fail_fast": false
+  },
+  "counts": {
+    "ok": 24,
+    "error": 0,
+    "skipped": 0
+  },
+  "finished_utc": "2026-06-29T04:42:32Z",
+  "wall_seconds": 539.3551940917969
+}

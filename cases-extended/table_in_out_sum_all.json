@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "id": "table_in_out_sum_all",
+  "function_type": "table_in_out",
+  "vgi_function": "sum_all_columns",
+  "title": "Table-in-out buffering: example.sum_all_columns((SELECT a, b FROM range(N)))",
+  "description": "Buffering table-in-out that aggregates inputs into per-column sums. Tests state management plus reduction.",
+  "requires_attach": true,
+  "call_qualified": true,
+  "alias": "example",
+  "attach_name": "example",
+  "setup_sql": [
+    "CREATE OR REPLACE TEMP TABLE bench_input AS SELECT i::BIGINT AS a, (i*2)::BIGINT AS b FROM range(${param:rows}) t(i);"
+  ],
+  "query_sql": "SELECT count(*) FROM ${alias}.sum_all_columns((SELECT * FROM bench_input));",
+  "teardown_sql": [
+    "DROP TABLE IF EXISTS bench_input;"
+  ],
+  "params": {
+    "rows": [
+      100000,
+      1000000
+    ]
+  },
+  "param_defaults": {
+    "rows": 1000000
+  },
+  "threads": [
+    1,
+    4
+  ],
+  "parallelizable": true,
+  "payload": {
+    "input_bytes_per_row": "16",
+    "output_bytes_per_row": "0",
+    "schema_in": "BIGINT a, BIGINT b",
+    "schema_out": "BIGINT sum_a, BIGINT sum_b \u2014 but only 1 row total, so per-input-row output is ~0",
+    "notes": "Reduction: N input rows -> 1 output row. Measure bytes-in/sec, not bytes-out/sec."
+  },
+  "iterations": {
+    "warmup": 1,
+    "measured": 5,
+    "cold_samples": 2
+  },
+  "applies_to": {
+    "transports": "all",
+    "languages": [
+      "python",
+      "java"
+    ]
+  },
+  "metric_tags": [
+    "throughput_rows",
+    "throughput_bytes",
+    "rpc_breakdown",
+    "parallel_scaling"
+  ],
+  "externalization": null,
+  "notes": "Buffering reducer. The honest throughput metric is input bytes/sec; output is fixed at 1 row regardless of N."
+}

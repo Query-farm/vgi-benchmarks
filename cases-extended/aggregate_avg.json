@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "id": "aggregate_avg",
+  "function_type": "aggregate",
+  "vgi_function": "vgi_avg",
+  "title": "Aggregate: vgi_avg(i::BIGINT) FROM range(N)",
+  "description": "Float-state aggregate; complements vgi_sum for type-state coverage. Input is BIGINT; the worker accumulates a DOUBLE.",
+  "requires_attach": true,
+  "call_qualified": true,
+  "alias": "example",
+  "attach_name": "example",
+  "setup_sql": [
+    "CREATE OR REPLACE TEMP TABLE bench_input AS SELECT i::BIGINT AS n FROM range(${param:rows}) t(i);"
+  ],
+  "query_sql": "SELECT ${alias}.vgi_avg(n) FROM bench_input;",
+  "teardown_sql": [
+    "DROP TABLE IF EXISTS bench_input;"
+  ],
+  "params": {
+    "rows": [
+      100000,
+      1000000
+    ]
+  },
+  "param_defaults": {
+    "rows": 1000000
+  },
+  "threads": [
+    1,
+    4
+  ],
+  "parallelizable": true,
+  "payload": {
+    "input_bytes_per_row": "8",
+    "output_bytes_per_row": "0",
+    "schema_in": "BIGINT value",
+    "schema_out": "DOUBLE result \u2014 1 row per group",
+    "notes": "Reduction. Measure input bytes/sec."
+  },
+  "iterations": {
+    "warmup": 1,
+    "measured": 5,
+    "cold_samples": 2
+  },
+  "applies_to": {
+    "transports": "all",
+    "languages": [
+      "python",
+      "java"
+    ]
+  },
+  "metric_tags": [
+    "throughput_rows",
+    "throughput_bytes",
+    "rpc_breakdown",
+    "parallel_scaling"
+  ],
+  "externalization": null,
+  "notes": "Aggregate state: (DOUBLE total, BIGINT count) merged via COMBINE."
+}

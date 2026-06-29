@@ -1,0 +1,38 @@
+[project]
+name = "vgi-benchmark-suite"
+version = "0.1.0"
+description = "Reproducible, traceable benchmark suite for VGI across transports, languages, function types, and DuckDB thread counts."
+requires-python = ">=3.11"
+dependencies = [
+  "haybarn>=1.5.3rc2",
+]
+
+[project.optional-dependencies]
+schema = ["jsonschema>=4.21"]
+pretty = ["rich>=13.7"]
+
+[project.scripts]
+vgi-bench = "vgi_bench.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["vgi_bench"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_configs = true

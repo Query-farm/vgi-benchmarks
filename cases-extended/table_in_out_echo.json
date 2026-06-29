@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "table_in_out_echo",
+  "function_type": "table_in_out",
+  "vgi_function": "echo",
+  "title": "Table-in-out passthrough: example.echo((SELECT ... FROM range(N)))",
+  "description": "Streams rows into the worker and back unchanged. Measures bidirectional round-trip cost.",
+  "requires_attach": true,
+  "call_qualified": true,
+  "alias": "example",
+  "attach_name": "example",
+  "setup_sql": [
+    "CREATE OR REPLACE TEMP TABLE bench_input AS SELECT ${payload_expr} FROM range(${param:rows}) t(i);"
+  ],
+  "query_sql": "SELECT count(*) FROM ${alias}.echo((SELECT * FROM bench_input));",
+  "teardown_sql": [
+    "DROP TABLE IF EXISTS bench_input;"
+  ],
+  "params": {
+    "rows": [
+      100000,
+      1000000
+    ],
+    "payload_bytes": [
+      8,
+      1024
+    ]
+  },
+  "param_defaults": {
+    "rows": 1000000,
+    "payload_bytes": 8
+  },
+  "threads": [
+    1,
+    4
+  ],
+  "parallelizable": true,
+  "payload": {
+    "input_bytes_per_row": "${param:payload_bytes}",
+    "output_bytes_per_row": "${param:payload_bytes}",
+    "schema_in": "BIGINT v (when payload<=8) or VARCHAR v (when payload>8)",
+    "schema_out": "(passthrough of input schema)",
+    "notes": "Echo passthrough; per-row size matches payload_bytes param."
+  },
+  "iterations": {
+    "warmup": 1,
+    "measured": 5,
+    "cold_samples": 2
+  },
+  "applies_to": {
+    "transports": "all",
+    "languages": [
+      "python",
+      "java"
+    ]
+  },
+  "metric_tags": [
+    "throughput_rows",
+    "throughput_bytes",
+    "rpc_breakdown",
+    "parallel_scaling"
+  ],
+  "externalization": null,
+  "notes": "payload_expr placeholder: <=8 bytes uses BIGINT i; otherwise repeat('x', N). Default TableInOutGenerator is parallel-capable (no @init_single_worker)."
+}

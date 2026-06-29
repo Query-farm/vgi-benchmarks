@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "language": "cpp",
+  "display_name": "C++ (vgi-rpc-c++ example worker)",
+  "runnable": false,
+  "repo_path": "~/Development/vgi-rpc-c++",
+  "build": {
+    "commands": [["cmake", "--build", "build", "--target", "vgi-example-worker"]],
+    "cwd": "~/Development/vgi-rpc-c++",
+    "notes": "Stub — confirm CMake target + binary path."
+  },
+  "supported_function_types": ["scalar", "table", "table_in_out"],
+  "version_command": ["clang++", "--version"],
+  "transports": {
+    "subprocess": {
+      "kind": "command_location",
+      "command": ["~/Development/vgi-rpc-c++/build/vgi-example-worker"],
+      "cwd": null,
+      "env": {},
+      "ready": {"method": "none"},
+      "location_template": "{command}",
+      "pooling": {"supported": true, "query_param": "pool", "values": [false, true]},
+      "teardown": "none",
+      "notes": "Stub."
+    }
+  },
+  "notes": "STUB."
+}

@@ -1,0 +1,82 @@
+{
+    "total_memory_allocated": 0,
+    "total_bytes_written": 0,
+    "total_bytes_read": 0,
+    "system_peak_temp_dir_size": 0,
+    "system_peak_buffer_memory": 107024384,
+    "rows_returned": 1,
+    "result_set_size": 16,
+    "latency": 0.247230375,
+    "wal_replay_entry_count": 0,
+    "extra_info": {},
+    "commit_local_storage_latency": 0.0,
+    "attach_load_storage_latency": 0.0,
+    "query_name": "SELECT sum(example.multiply(n, 2)) FROM bench_input;",
+    "cpu_time": 0.23603459000000046,
+    "checkpoint_latency": 0.0,
+    "cumulative_cardinality": 20000001,
+    "waiting_to_attach_latency": 0.0,
+    "write_to_wal_latency": 0.0,
+    "attach_replay_wal_latency": 0.0,
+    "blocked_thread_time": 0.0,
+    "cumulative_rows_scanned": 10000000,
+    "children": [
+        {
+            "system_peak_temp_dir_size": 0,
+            "result_set_size": 16,
+            "operator_type": "UNGROUPED_AGGREGATE",
+            "operator_timing": 0.00852772400000005,
+            "operator_rows_scanned": 0,
+            "extra_info": {
+                "Aggregates": "sum(#0)"
+            },
+            "system_peak_buffer_memory": 0,
+            "cumulative_rows_scanned": 10000000,
+            "cpu_time": 0.23603113200000045,
+            "operator_name": "UNGROUPED_AGGREGATE",
+            "cumulative_cardinality": 20000001,
+            "operator_cardinality": 1,
+            "children": [
+                {
+                    "cumulative_cardinality": 20000000,
+                    "operator_cardinality": 10000000,
+                    "cumulative_rows_scanned": 10000000,
+                    "operator_name": "PROJECTION",
+                    "cpu_time": 0.2275034080000004,
+                    "operator_rows_scanned": 0,
+                    "system_peak_buffer_memory": 0,
+                    "extra_info": {
+                        "Projections": "multiply(n)",
+                        "Estimated Cardinality": "10000000"
+                    },
+                    "operator_timing": 0.2254047660000004,
+                    "system_peak_temp_dir_size": 0,
+                    "result_set_size": 80000000,
+                    "operator_type": "PROJECTION",
+                    "children": [
+                        {
+                            "system_peak_temp_dir_size": 0,
+                            "result_set_size": 80000000,
+                            "operator_type": "TABLE_SCAN",
+                            "operator_timing": 0.0020986420000000065,
+                            "operator_rows_scanned": 10000000,
+                            "extra_info": {
+                                "Table": "\"temp\".main.bench_input",
+                                "Type": "Sequential Scan",
+                                "Projections": "n",
+                                "Estimated Cardinality": "10000000"
+                            },
+                            "system_peak_buffer_memory": 0,
+                            "cumulative_rows_scanned": 10000000,
+                            "cpu_time": 0.0020986420000000065,
+                            "operator_name": "SEQ_SCAN",
+                            "cumulative_cardinality": 10000000,
+                            "operator_cardinality": 10000000,
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

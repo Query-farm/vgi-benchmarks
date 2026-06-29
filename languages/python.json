@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "language": "python",
+  "display_name": "Python (vgi-python fixtures)",
+  "runnable": true,
+  "repo_path": "~/Development/vgi-python",
+  "build": {
+    "commands": [["uv", "sync"]],
+    "cwd": "~/Development/vgi-python",
+    "notes": "uv workspace install; the vgi-fixtures sidecar provides vgi-fixture-* entry points."
+  },
+  "supported_function_types": ["scalar", "table", "table_in_out", "aggregate"],
+  "version_command": ["uv", "run", "--project", "~/Development/vgi-python", "python", "-c", "import vgi; print(getattr(vgi, '__version__', 'dev'))"],
+  "transports": {
+    "subprocess": {
+      "kind": "command_location",
+      "command": ["uv", "run", "--project", "~/Development/vgi-python", "vgi-fixture-worker"],
+      "cwd": null,
+      "env": {},
+      "ready": {"method": "none"},
+      "location_template": "{command}",
+      "pooling": {"supported": true, "query_param": null, "values": [false, true]},
+      "teardown": "none",
+      "notes": "stdio pipes — already fast on macOS; SHM negotiation adds overhead without removing a bottleneck for this worker."
+    },
+    "subprocess-shm": {
+      "kind": "command_location",
+      "command": ["uv", "run", "--project", "~/Development/vgi-python", "vgi-fixture-worker"],
+      "cwd": null,
+      "env": {"VGI_RPC_SHM_SIZE_BYTES": "67108864"},
+      "ready": {"method": "none"},
+      "location_template": "{command}",
+      "pooling": {"supported": true, "query_param": null, "values": [false, true]},
+      "teardown": "none",
+      "notes": "Same as subprocess but negotiates shared-memory transport (multiprocessing.shared_memory). Empirically slower for this worker because pyarrow's compute kernel was already saturating throughput and SHM adds a copy + Python wrapper overhead."
+    },
+    "http": {
+      "kind": "server",
+      "command": ["uv", "run", "--project", "~/Development/vgi-python", "vgi-fixture-http", "--port", "0", "--log-format", "json"],
+      "cwd": null,
+      "env": {},
+      "ready": {"method": "log_regex", "log_regex": "PORT:([0-9]+)", "stream": "stdout", "timeout_s": 45},
+      "location_template": "http://127.0.0.1:{port}",
+      "pooling": {"supported": false},
+      "teardown": "signal_term",
+      "notes": "Port auto-selected; harness parses PORT:N from server's stdout (merged with stderr). One server reused across all iterations of the cell."
+    },
+    "unix": {
+      "kind": "socket",
+      "command": ["uv", "run", "--project", "~/Development/vgi-python", "vgi-fixture-worker", "--unix", "{tmp_socket}", "--idle-timeout", "600"],
+      "cwd": null,
+      "env": {},
+      "ready": {"method": "log_regex", "log_regex": "UNIX:(\\S+)", "stream": "stdout", "timeout_s": 45},
+      "location_template": "unix://{socket}",
+      "pooling": {"supported": false},
+      "teardown": "signal_term",
+      "notes": "{tmp_socket} is substituted with a per-cell temp path; UNIX:<abs> line on stdout confirms readiness. Idle-timeout safety net at 600s; harness SIGTERMs at teardown."
+    }
+  },
+  "notes": "Reference adapter — runnable across all three primary transports."
+}

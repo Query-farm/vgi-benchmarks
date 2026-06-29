@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "language": "java",
+  "display_name": "Java (vgi-java vgi-example-worker)",
+  "runnable": true,
+  "repo_path": "~/vgi-java",
+  "build": {
+    "commands": [["./gradlew", ":vgi-example-worker:installDist"]],
+    "cwd": "~/vgi-java",
+    "notes": "Produces vgi-example-worker/build/install/vgi-example-worker/bin/vgi-example-worker. Composite-builds vgi-rpc-java from ~/Development/vgi-rpc-java when present."
+  },
+  "supported_function_types": ["scalar", "table", "table_in_out", "aggregate"],
+  "version_command": ["java", "-version"],
+  "transports": {
+    "launch": {
+      "kind": "launch",
+      "command": ["~/vgi-java/vgi-example-worker/build/install/vgi-example-worker/bin/vgi-example-worker"],
+      "cwd": null,
+      "env": {},
+      "ready": {"method": "none"},
+      "location_template": "launch:~/vgi-java/vgi-example-worker/build/install/vgi-example-worker/bin/vgi-example-worker",
+      "pooling": {"supported": true, "query_param": null, "values": [false, true]},
+      "teardown": "none",
+      "notes": "VGI launcher manages spawn + idle shutdown; the JVM stays warm across all bench ATTACHes so JIT actually gets to optimise the worker code."
+    },
+    "launch-shm": {
+      "kind": "launch",
+      "command": ["~/vgi-java/vgi-example-worker/build/install/vgi-example-worker/bin/vgi-example-worker"],
+      "cwd": null,
+      "env": {"VGI_RPC_SHM_SIZE_BYTES": "67108864"},
+      "ready": {"method": "none"},
+      "location_template": "launch:~/vgi-java/vgi-example-worker/build/install/vgi-example-worker/bin/vgi-example-worker",
+      "pooling": {"supported": true, "query_param": null, "values": [false, true]},
+      "teardown": "none",
+      "notes": "Same as launch but negotiates shared-memory transport (64 MiB segment). Massive win on Java — unix-socket framing was the bottleneck; SHM removes it and lets the JVM's off-heap ArrowBufs map directly. Throughput roughly doubles at t=4."
+    }
+  },
+  "notes": "vgi-java is the Java port of the VGI protocol (not vgi-rpc-java, which is the underlying RPC layer). Worker uses Java 21 toolchain (foojay-resolver auto-provisions if absent). Only the launch: transport is declared — subprocess would spawn a fresh JVM per query, which would dominate the measurement; the launcher keeps the JVM warm long enough for the JIT to compile hot paths."
+}

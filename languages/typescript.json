@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "language": "typescript",
+  "display_name": "TypeScript / Bun (vgi-typescript)",
+  "runnable": false,
+  "repo_path": "~/Development/vgi-typescript",
+  "build": {
+    "commands": [["bun", "install"]],
+    "cwd": "~/Development/vgi-typescript",
+    "notes": "bun runtime; example workers live under bin/."
+  },
+  "supported_function_types": ["scalar", "table", "table_in_out"],
+  "version_command": ["bun", "--version"],
+  "transports": {
+    "subprocess": {
+      "kind": "command_location",
+      "command": ["~/Development/vgi-typescript/bin/vgi-example-worker"],
+      "cwd": null,
+      "env": {},
+      "ready": {"method": "none"},
+      "location_template": "{command}",
+      "pooling": {"supported": true, "query_param": "pool", "values": [false, true]},
+      "teardown": "none",
+      "notes": "Stub. bin/vgi-example-worker is the bun wrapper around examples/worker.ts."
+    },
+    "http": {
+      "kind": "server",
+      "command": ["~/Development/vgi-typescript/bin/vgi-example-http-worker"],
+      "cwd": null,
+      "env": {},
+      "ready": {"method": "log_regex", "log_regex": "PORT:([0-9]+)", "stream": "stdout", "timeout_s": 30},
+      "location_template": "http://127.0.0.1:{port}",
+      "pooling": {"supported": false},
+      "teardown": "signal_term",
+      "notes": "Stub — confirm port arg + ready line."
+    }
+  },
+  "notes": "STUB. Unix transport not yet implemented in vgi-typescript at the time this file was written."
+}

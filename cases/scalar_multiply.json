@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "id": "scalar_multiply",
+  "function_type": "scalar",
+  "vgi_function": "multiply",
+  "title": "Scalar throughput: example.multiply(n, 2)",
+  "description": "Per-row scalar RPC throughput across N rows. Measures how many scalar calls per second VGI can sustain.",
+  "requires_attach": true,
+  "call_qualified": true,
+  "alias": "example",
+  "attach_name": "example",
+  "setup_sql": [
+    "CREATE OR REPLACE TEMP TABLE bench_input AS SELECT i::BIGINT AS n FROM range(${param:rows}) t(i);"
+  ],
+  "query_sql": "SELECT sum(${alias}.multiply(n, 2)) FROM bench_input;",
+  "teardown_sql": [
+    "DROP TABLE IF EXISTS bench_input;"
+  ],
+  "params": {
+    "rows": [
+      10000000
+    ]
+  },
+  "param_defaults": {
+    "rows": 10000000
+  },
+  "threads": [
+    1,
+    4
+  ],
+  "parallelizable": true,
+  "payload": {
+    "input_bytes_per_row": "16",
+    "output_bytes_per_row": "8",
+    "schema_in": "BIGINT value, BIGINT factor (const)",
+    "schema_out": "BIGINT result",
+    "notes": "Scalars parallelize via the VGI C++ thread fanout \u2014 each DuckDB scan thread gets its own worker connection."
+  },
+  "iterations": {
+    "warmup": 3,
+    "measured": 15,
+    "cold_samples": 0
+  },
+  "applies_to": {
+    "transports": "all",
+    "languages": [
+      "python",
+      "java",
+      "go",
+      "rust"
+    ]
+  },
+  "metric_tags": [
+    "throughput_rows",
+    "throughput_bytes",
+    "calls_per_sec",
+    "latency",
+    "rpc_breakdown",
+    "cold_conn_overhead",
+    "parallel_scaling"
+  ],
+  "externalization": null,
+  "notes": "Uses sum() to FORCE per-row evaluation. The naive count(*) of a SELECT-with-projection lets DuckDB elide the scalar call entirely (count doesn't reference the column). Per-row: 16 bytes in (2x BIGINT), 8 bytes out."
+}

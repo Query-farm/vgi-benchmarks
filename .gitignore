@@ -1,0 +1,24 @@
+# uv build artifacts
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.ruff_cache/
+.mypy_cache/
+
+# smoke / scratch runs are committed *intentionally* by name only:
+results/_smoke*/
+results/_scratch*/
+
+# editor + os
+.DS_Store
+.idea/
+.vscode/
+
+# Public repo: keep only the reference runs the report cites; exploratory runs
+# stay local. Drop a new run dir here and add a "!results/<name>/" line to publish it.
+results/*
+!results/_fresh3lang/
+!results/_freshrust/

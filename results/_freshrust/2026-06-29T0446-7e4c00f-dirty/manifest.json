@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "run_id": "2026-06-29T0446-7e4c00f-dirty",
+  "started_utc": "2026-06-29T04:46:09Z",
+  "harness_version": "0.1.0",
+  "matrix_size": 8,
+  "cli_args": {
+    "cases": "scalar_multiply,scalar_upper_case",
+    "transports": "launch,launch-shm",
+    "languages": "rust",
+    "threads": "1,4",
+    "iterations_override": "warmup=2,measured=8",
+    "note": "docs-justification: rust worker (vgi-rust), both scalar cases, launch+shm, 10M rows",
+    "duckdb": "/Users/rusty/Development/vgi/duckdb.old/build/release/duckdb",
+    "trim_outliers": true,
+    "fail_fast": false
+  },
+  "counts": {
+    "ok": 8,
+    "error": 0,
+    "skipped": 0
+  },
+  "finished_utc": "2026-06-29T04:48:49Z",
+  "wall_seconds": 159.2133650779724
+}

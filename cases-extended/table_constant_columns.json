@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "id": "table_constant_columns",
+  "function_type": "table",
+  "vgi_function": "constant_columns",
+  "title": "Table generator with wide rows: example.constant_columns(N, c1, c2, ...)",
+  "description": "Tests batch throughput with multi-column constant payload to widen per-row bytes.",
+  "requires_attach": true,
+  "call_qualified": true,
+  "alias": "example",
+  "attach_name": "example",
+  "setup_sql": [],
+  "query_sql": "SELECT count(*) FROM ${alias}.constant_columns(${param:rows}, 1, 'a', 3.14);",
+  "teardown_sql": [],
+  "params": {
+    "rows": [
+      100000,
+      1000000
+    ]
+  },
+  "param_defaults": {
+    "rows": 1000000
+  },
+  "threads": [
+    1,
+    4
+  ],
+  "parallelizable": false,
+  "payload": {
+    "input_bytes_per_row": "0",
+    "output_bytes_per_row": "21",
+    "schema_in": "(generator; no input rows)",
+    "schema_out": "BIGINT col_0, VARCHAR col_1='a', DOUBLE col_2 \u2014 8 + (4+1) + 8 = 21 bytes/row",
+    "notes": "Output schema derived from varargs (1, 'a', 3.14)."
+  },
+  "iterations": {
+    "warmup": 1,
+    "measured": 5,
+    "cold_samples": 2
+  },
+  "applies_to": {
+    "transports": "all",
+    "languages": [
+      "python",
+      "java"
+    ]
+  },
+  "metric_tags": [
+    "throughput_rows",
+    "throughput_bytes",
+    "rpc_breakdown"
+  ],
+  "externalization": null,
+  "notes": "Marked parallel_capable=false because ConstantColumnsFunction is decorated @init_single_worker in vgi-python (vgi/_test_fixtures/table/pairs.py)."
+}

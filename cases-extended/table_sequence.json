@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "id": "table_sequence",
+  "function_type": "table",
+  "vgi_function": "sequence",
+  "title": "Table generator throughput: example.sequence(N)",
+  "description": "Pure server->client batch streaming; no input side. Measures raw output-batch throughput.",
+  "requires_attach": true,
+  "call_qualified": true,
+  "alias": "example",
+  "attach_name": "example",
+  "setup_sql": [],
+  "query_sql": "SELECT count(*) FROM ${alias}.sequence(${param:rows});",
+  "teardown_sql": [],
+  "params": {
+    "rows": [
+      100000,
+      1000000
+    ]
+  },
+  "param_defaults": {
+    "rows": 1000000
+  },
+  "threads": [
+    1,
+    4
+  ],
+  "parallelizable": false,
+  "payload": {
+    "input_bytes_per_row": "0",
+    "output_bytes_per_row": "8",
+    "schema_in": "(generator; no input rows)",
+    "schema_out": "BIGINT n",
+    "notes": "Generator: 8 bytes per emitted row."
+  },
+  "iterations": {
+    "warmup": 1,
+    "measured": 5,
+    "cold_samples": 2
+  },
+  "applies_to": {
+    "transports": "all",
+    "languages": [
+      "python",
+      "java"
+    ]
+  },
+  "metric_tags": [
+    "throughput_rows",
+    "throughput_bytes",
+    "rpc_breakdown",
+    "cold_conn_overhead"
+  ],
+  "externalization": null,
+  "notes": "Marked parallel_capable=false because SequenceFunction is decorated @init_single_worker in vgi-python (vgi/_test_fixtures/table/sequence.py). Multi-thread cells are skipped to avoid recording artifactual 1.0x speedups."
+}

@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "language": "kotlin",
+  "display_name": "Kotlin (vgi-kotlin)",
+  "runnable": false,
+  "repo_path": "~/Development/vgi-kotlin",
+  "build": {
+    "commands": [["./gradlew", "shadowJar"]],
+    "cwd": "~/Development/vgi-kotlin",
+    "notes": "Stub — confirm gradle target + jar path."
+  },
+  "supported_function_types": ["scalar", "table", "table_in_out"],
+  "version_command": ["java", "-version"],
+  "transports": {
+    "subprocess": {
+      "kind": "command_location",
+      "command": ["java", "-jar", "~/Development/vgi-kotlin/build/libs/vgi-example-worker.jar"],
+      "cwd": null,
+      "env": {},
+      "ready": {"method": "none"},
+      "location_template": "{command}",
+      "pooling": {"supported": true, "query_param": "pool", "values": [false, true]},
+      "teardown": "none",
+      "notes": "Stub."
+    }
+  },
+  "notes": "STUB."
+}
