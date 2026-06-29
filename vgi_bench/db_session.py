@@ -56,7 +56,14 @@ def _ensure_extension_loaded(con: haybarn.DuckDBPyConnection) -> None:
     """
     global _FORCE_INSTALLED
     if not _FORCE_INSTALLED:
-        con.execute("FORCE INSTALL vgi FROM community;")
+        try:
+            con.execute("FORCE INSTALL vgi FROM community;")
+        except Exception as e:
+            # Windows: the extension dir lives outside common AV exclusions, so a
+            # freshly downloaded .duckdb_extension can be briefly locked by an
+            # on-access scan and the atomic move fails ("Access is denied"). The
+            # previously installed copy is still valid — fall back to it.
+            log.warning("FORCE INSTALL vgi failed (using already-installed copy): %s", e)
         _FORCE_INSTALLED = True
     con.execute("LOAD vgi;")
 
