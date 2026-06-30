@@ -15,6 +15,7 @@ real "first-call cost" (worker spawn + bind + init).
 from __future__ import annotations
 
 import logging
+import os
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -62,6 +63,11 @@ def force_install_extension() -> None:
     global _FORCE_INSTALLED
     if _FORCE_INSTALLED:
         return
+    if os.environ.get("VGI_BENCH_LOCAL_EXT"):
+        # Testing a local VGI build (e.g. an unreleased Windows fix): we LOAD it
+        # by path in _ensure_extension_loaded, so there's nothing to install.
+        _FORCE_INSTALLED = True
+        return
     con = _new_connection()
     try:
         con.execute("FORCE INSTALL vgi FROM community;")
@@ -78,7 +84,17 @@ def _ensure_extension_loaded(con: haybarn.DuckDBPyConnection) -> None:
     The community build is force-installed once per run by
     force_install_extension(); here we only LOAD. As a safety net (e.g. if that
     step was skipped), install-then-load when LOAD finds nothing installed.
+
+    Set ``VGI_BENCH_LOCAL_EXT=<path to vgi.duckdb_extension>`` to LOAD a local
+    build by path instead of the community release — useful for benchmarking an
+    unreleased fix (see docs/WINDOWS.md). The connection already allows unsigned
+    + metadata-mismatched extensions, so a locally-built .duckdb_extension whose
+    engine-version string differs from the running haybarn still loads.
     """
+    local = os.environ.get("VGI_BENCH_LOCAL_EXT")
+    if local:
+        con.execute(f"LOAD '{local}';")
+        return
     try:
         con.execute("LOAD vgi;")
     except Exception:
@@ -87,7 +103,12 @@ def _ensure_extension_loaded(con: haybarn.DuckDBPyConnection) -> None:
 
 
 def _new_connection() -> haybarn.DuckDBPyConnection:
-    return haybarn.connect(config={"allow_unsigned_extensions": "true"})
+    config = {"allow_unsigned_extensions": "true"}
+    if os.environ.get("VGI_BENCH_LOCAL_EXT"):
+        # A local build's engine-version string (a git hash) won't match the
+        # released haybarn's tag; allow the mismatch so LOAD-by-path succeeds.
+        config["allow_extensions_metadata_mismatch"] = "true"
+    return haybarn.connect(config=config)
 
 
 def _render_query(case: Case, params: dict[str, Any]) -> tuple[list[str], str, list[str]]:

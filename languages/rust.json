@@ -5,35 +5,97 @@
   "runnable": true,
   "repo_path": "~/Development/vgi-rust",
   "build": {
-    "commands": [["cargo", "build", "--release", "--bin", "vgi-example-worker"]],
+    "commands": [
+      [
+        "cargo",
+        "build",
+        "--release",
+        "--bin",
+        "vgi-example-worker"
+      ]
+    ],
     "cwd": "~/Development/vgi-rust",
     "notes": "Produces ~/Development/vgi-rust/target/release/vgi-example-worker. Serves the catalog named by VGI_WORKER_CATALOG_NAME (default `example`); transport is stdio (default) or --unix <path> (launcher)."
   },
-  "supported_function_types": ["scalar", "table", "table_in_out", "aggregate"],
-  "version_command": ["rustc", "--version"],
+  "supported_function_types": [
+    "scalar",
+    "table",
+    "table_in_out",
+    "aggregate"
+  ],
+  "version_command": [
+    "rustc",
+    "--version"
+  ],
   "transports": {
-    "launch": {
-      "kind": "launch",
-      "command": ["~/Development/vgi-rust/target/release/vgi-example-worker"],
+    "subprocess": {
+      "kind": "command_location",
+      "command": [
+        "~/Development/vgi-rust/target/release/vgi-example-worker"
+      ],
       "cwd": null,
       "env": {},
-      "ready": {"method": "none"},
+      "ready": {
+        "method": "none"
+      },
+      "location_template": "{command}",
+      "pooling": {
+        "supported": true,
+        "query_param": null,
+        "values": [
+          false,
+          true
+        ]
+      },
+      "teardown": "none",
+      "notes": "Windows: stdio subprocess transport over the built Rust worker exe (launch:/unix: are POSIX-only). adapter.py appends .exe on Windows."
+    },
+    "launch": {
+      "kind": "launch",
+      "command": [
+        "~/Development/vgi-rust/target/release/vgi-example-worker"
+      ],
+      "cwd": null,
+      "env": {},
+      "ready": {
+        "method": "none"
+      },
       "location_template": "launch:~/Development/vgi-rust/target/release/vgi-example-worker",
-      "pooling": {"supported": true, "query_param": null, "values": [false, true]},
+      "pooling": {
+        "supported": true,
+        "query_param": null,
+        "values": [
+          false,
+          true
+        ]
+      },
       "teardown": "none",
       "notes": "VGI launcher manages spawn + idle shutdown. Same launcher path as Go and Java for cross-language fairness."
     },
     "launch-shm": {
       "kind": "launch",
-      "command": ["~/Development/vgi-rust/target/release/vgi-example-worker"],
+      "command": [
+        "~/Development/vgi-rust/target/release/vgi-example-worker"
+      ],
       "cwd": null,
-      "env": {"VGI_RPC_SHM_SIZE_BYTES": "67108864"},
-      "ready": {"method": "none"},
+      "env": {
+        "VGI_RPC_SHM_SIZE_BYTES": "67108864"
+      },
+      "ready": {
+        "method": "none"
+      },
       "location_template": "launch:~/Development/vgi-rust/target/release/vgi-example-worker",
-      "pooling": {"supported": true, "query_param": null, "values": [false, true]},
+      "pooling": {
+        "supported": true,
+        "query_param": null,
+        "values": [
+          false,
+          true
+        ]
+      },
       "teardown": "none",
       "notes": "Same as launch but negotiates the shared-memory transport (64 MiB segment)."
     }
   },
-  "notes": "vgi-rust is the Rust port of the VGI protocol. Registers the `example` catalog with the same VGI function names as vgi-python/vgi-java/vgi-go (multiply, upper_case, sequence, echo, …)."
+  "notes": "vgi-rust is the Rust port of the VGI protocol. Registers the `example` catalog with the same VGI function names as vgi-python/vgi-java/vgi-go (multiply, upper_case, sequence, echo, \u2026)."
 }

@@ -65,7 +65,16 @@ def _substitute(template: str, mapping: dict[str, str]) -> str:
 
 
 def _render_command(command: list[str], mapping: dict[str, str]) -> list[str]:
-    return [os.path.expanduser(_substitute(c, mapping)) for c in command]
+    out: list[str] = []
+    for c in command:
+        c = os.path.expanduser(_substitute(c, mapping))
+        # Adapters carry POSIX-style worker paths (e.g. .../vgi-example-worker-go);
+        # on Windows the built binary is `<path>.exe`. Append it when the bare path
+        # has no extension and the .exe exists, so one adapter works on both OSes.
+        if os.name == "nt" and not os.path.splitext(c)[1] and os.path.exists(c + ".exe"):
+            c += ".exe"
+        out.append(c)
+    return out
 
 
 def _join_command(cmd: list[str]) -> str:

@@ -43,6 +43,10 @@ uv run vgi-bench run --cases scalar_multiply \
 uv run scripts/make_report.py results/_quick/<run_id>   # render PDF
 ```
 
+> **Windows:** the suite runs, but only the `subprocess` (and `tcp://`/`http`)
+> transports work — `launch:`/`unix://`/shared-memory are POSIX-only — and the
+> example workers must be built from source. See [docs/WINDOWS.md](docs/WINDOWS.md).
+
 ## Architecture
 
 The harness is stdlib-only Python at runtime (no `jsonschema`, no `requests`,
